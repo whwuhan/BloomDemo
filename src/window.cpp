@@ -96,7 +96,7 @@ void Window::init_and_run()
     // 发光球体渲染
     Sphere sphere;
     sphere.create_sphere();
-    Scene::spheres["test"] = sphere;
+    Scene::add_sphere("test", sphere);
     // end test
 
     // 渲染循环
@@ -106,12 +106,10 @@ void Window::init_and_run()
         float current_frame = glfwGetTime();
         Window::delta_time = current_frame - Window::last_frame;
         Window::last_frame = current_frame;
-        // 初始设置
 
         // 键盘鼠标事件监听
         process_input(Window::glfw_window);
-
-        // 开始渲染场景
+        
         // 背景颜色
         glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -122,6 +120,8 @@ void Window::init_and_run()
 
         // 激活着色器程序
         sphere_shader.use();
+
+        // MVP变换
         sphere_shader.setMat4("projection", projection);
         sphere_shader.setMat4("view", view);
         sphere_shader.setMat4("model", sphere.model);

@@ -6,7 +6,9 @@ class Scene
 {
 public:
     Scene();
-    static unsigned int sphere_amount;                                                  // 发光球体数量
+
+    static unsigned int sphere_count;                                                  // 发光球体数量
+
     // 给场景添加物体
     static void add_sphere(const std::string& sphere_name, const Sphere& sphere);       // 添加发光球体
 

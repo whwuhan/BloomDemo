@@ -27,10 +27,10 @@ void Sphere::create_sphere()
         glGenBuffers(1, &VBO);
         glGenBuffers(1, &EBO);
 
-        vector<vec3> positions; // 球面上的点
-        vector<vec2> uv;        //球面上的uv坐标
-        vector<vec3> normals;   //球面上的点法线
-        vector<unsigned int> indices;
+        vector<vec3> positions;         // 球面上的点
+        vector<vec2> uv;                // 球面上的uv坐标
+        vector<vec3> normals;           // 球面上的点法线
+        vector<unsigned int> indices;   // 球面坐标索引
 
         //生成球的坐标信息
         float PI = 3.14159265359;
@@ -51,7 +51,7 @@ void Sphere::create_sphere()
             }
         }
 
-        //生成EBO
+        // 生成EBO
         // 将三个点绘制成一个面
         bool odd_row = false; //是否是奇数行
         for (unsigned int y = 0; y < y_segments; ++y)
