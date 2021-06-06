@@ -2,6 +2,12 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include <utils/camera.h>
+// 两种操作模式FPS风格和WOW风格
+enum OPERATE_MODE 
+{
+    WOW,
+    FPS
+};
 class Window
 {
 public:
@@ -16,6 +22,8 @@ public:
     // 渲染相关
     static bool use_MSAA;                           // 是否使用MSAA抗锯齿
     static int MSAA_level;                          // 抗锯齿级别
+    // 镜头操作模式
+    static OPERATE_MODE operate_mode;
     // timing
     static float delta_time;
     static float last_frame;
