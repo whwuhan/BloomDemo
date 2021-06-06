@@ -7,6 +7,7 @@
 #include <utils/render.h>
 #include <utils/shader.h>
 #include <geometry/sphere.h>
+#include <UI/bloom_demo_ui.h>
 #include <components/scene.h>
 // 两种操作模式FPS风格和WOW风格
 enum OPERATE_MODE 

@@ -6,7 +6,7 @@ class Scene
 {
 public:
     Scene();
-
+    
     static unsigned int sphere_count;                                                  // 发光球体数量
 
     // 给场景添加物体

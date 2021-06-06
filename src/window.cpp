@@ -82,6 +82,8 @@ void Window::init_and_run()
     // glPoint_size(25);
     //======================glfw glad opengl 初始化结束======================
 
+    // UI初始化
+    BloomDemoUI::init(Window::glfw_window);
 
     // shader
     Shader sphere_shader
@@ -99,6 +101,7 @@ void Window::init_and_run()
     Scene::add_sphere("test", sphere);
     // end test
 
+    
     // 渲染循环
     while (!glfwWindowShouldClose(Window::glfw_window))
     {
@@ -135,6 +138,9 @@ void Window::init_and_run()
         }
 
         // ==========================场景渲染结束=======================
+
+        BloomDemoUI::render_demo_ui();
+
         // 交换buffer
         glfwSwapBuffers(Window::glfw_window);
         glfwPollEvents();
