@@ -1,14 +1,15 @@
 #include <iostream>
 #include <window.h>
 using namespace std;
+using namespace glm;
 
 //static变量初始化
 GLFWwindow *Window::glfw_window = nullptr;              // glfw window
 //窗口大小
-unsigned int Window::width = 1600;
-unsigned int Window::height = 900;
+unsigned int Window::width = 1200;
+unsigned int Window::height = 800;
 //相机相关
-Camera Window::camera;                                  // 相机
+Camera Window::camera(vec3(0.0f,0.0f,1.0f));            // 相机
 float Window::camera_speed_scale = 1.0f;                // 相机移速比例
 //渲染相关
 bool Window::use_MSAA = true;
@@ -73,34 +74,68 @@ void Window::init_and_run()
         cout << "Failed to initialize GLAD" << endl;
         return;
     }
-    //openGL全局配置
-    glEnable(GL_DEPTH_TEST);            //开启深度测试
-    glEnable(GL_MULTISAMPLE);           // 开启MSAA通常都是默认开启的
-    glEnable(GL_PROGRAM_POINT_SIZE);    //开启改变点的大小（暂时无用）
 
+    //openGL全局配置
+    glEnable(GL_DEPTH_TEST);         // 开启深度测试
+    glEnable(GL_MULTISAMPLE);        // 开启MSAA通常都是默认开启的
+    glEnable(GL_PROGRAM_POINT_SIZE); // 开启改变点的大小（暂时无用）
     // glPoint_size(25);
     //======================glfw glad opengl 初始化结束======================
+
+
+    // shader
+    Shader sphere_shader
+    (
+        "shaders/sphere.vs.glsl",
+        "shaders/sphere.fs.glsl"
+    );
+    // end shader
+
+
+    // test
+    // 发光球体渲染
+    Sphere sphere;
+    sphere.create_sphere();
+    Scene::spheres["test"] = sphere;
+    // end test
 
     // 渲染循环
     while (!glfwWindowShouldClose(Window::glfw_window))
     {
-        
-        // per-frame time logic
+        // 保证不同帧数下移动速度一致
         float current_frame = glfwGetTime();
         Window::delta_time = current_frame - Window::last_frame;
         Window::last_frame = current_frame;
-        //初始设置
+        // 初始设置
 
-        //键盘鼠标事件监听
+        // 键盘鼠标事件监听
         process_input(Window::glfw_window);
 
-        //开始渲染场景
-        //背景颜色
+        // 开始渲染场景
+        // 背景颜色
         glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        
+        // 获取投影矩阵和相机矩阵
+        mat4 projection = perspective(radians(camera.Zoom), (float)Window::width / (float)Window::height, 0.1f, 100.0f);
+        mat4 view = camera.GetViewMatrix();
 
-        //==========================场景渲染结束==========================
-        //交换buffer
+        // 激活着色器程序
+        sphere_shader.use();
+        sphere_shader.setMat4("projection", projection);
+        sphere_shader.setMat4("view", view);
+        sphere_shader.setMat4("model", sphere.model);
+        sphere_shader.setVec4("color", sphere.color);
+        // ==========================场景渲染==========================
+
+        // 渲染所有的球体光源
+        for(auto it = Scene::spheres.begin(); it != Scene::spheres.end(); it++)
+        {
+            Render::render_sphere(it->second);
+        }
+
+        // ==========================场景渲染结束=======================
+        // 交换buffer
         glfwSwapBuffers(Window::glfw_window);
         glfwPollEvents();
     }

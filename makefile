@@ -4,6 +4,7 @@ include makefile_conf.mk
 #所有.o文件
 OBJS := \
 objs/bloom_demo_main.o \
+objs/scene.o \
 objs/sphere.o \
 objs/camera.o \
 objs/render.o \
@@ -23,6 +24,10 @@ BloomDemo : $(OBJS)
 # 程序入口目标文件bloom_demo_main.o
 objs/bloom_demo_main.o : bloom_demo_main.cpp
 	$(CC) $(FLAGS) -I$(INCLUDE_DIR) -I$(DEPS_INCLUDE_DIR) -c bloom_demo_main.cpp -o $@
+
+# scene 场景
+objs/scene.o : src/components/scene.cpp
+	$(CC) $(FLAGS) -I$(INCLUDE_DIR) -I$(DEPS_INCLUDE_DIR) -c src/components/scene.cpp -o $@
 
 # sphere
 objs/sphere.o : src/geometry/sphere.cpp

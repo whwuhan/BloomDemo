@@ -1,7 +1,13 @@
 #pragma once
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
 #include <utils/camera.h>
+#include <utils/render.h>
+#include <utils/shader.h>
+#include <geometry/sphere.h>
+#include <components/scene.h>
 // 两种操作模式FPS风格和WOW风格
 enum OPERATE_MODE 
 {
