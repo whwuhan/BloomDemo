@@ -93,6 +93,69 @@ void Window::init_and_run()
     );
     // end shader
 
+    // 配置framebuffer
+    unsigned int hdr_fbo;
+    glGenFramebuffers(1, &hdr_fbo);
+    glBindFramebuffer(GL_FRAMEBUFFER, hdr_fbo);
+    // 创建两个color buffer(textures)存储MRT(Multiple Render Targets)的结果
+    // 一个存储原始图像，一个存储高亮部分
+    unsigned int color_buffers[2];
+    glGenTextures(2, color_buffers);
+    // 配置textures参数并绑定到fbo上
+    for(unsigned int i = 0; i < 2; i++)
+    {
+        glBindTexture(GL_TEXTURE_2D, color_buffers[i]);
+        // 给texture分配内存空间
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, width, height, 0, GL_RGBA, GL_FLOAT, NULL);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);  // we clamp to the edge as the blur filter would otherwise sample repeated texture values!
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        // 将texture和绑定到framebuffer上
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i, GL_TEXTURE_2D, color_buffers[i], 0);
+    }
+
+    // 配置renderbuffer
+    unsigned int rbo_depth;
+    glGenBuffers(1, &rbo_depth);
+    glBindRenderbuffer(GL_RENDERBUFFER, rbo_depth);
+    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, width, height);
+    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, rbo_depth);
+    // 告诉opengl需要使用哪两个color attachment
+    unsigned int attachments[2] = {GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1};
+    glDrawBuffers(2, attachments);
+    if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+    {
+        cout << "Framebuffer not complete!" << endl;
+    }
+    // 绑定回原有的framebuffer
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+    // 创建模糊高亮部分的framebuffer
+    // trick创建两个framebuffer 因为要滤波多次，例如横向滤波5次，纵向滤波5次
+    // 所以用两个framebuffer，先提取高亮部分放到第一个buffer中，然后横向滤波一次放入第二个buffer
+    // 再用第二个buffer中的结果纵向滤波一次，结果放入第一个buffer，由此交替滤波
+    unsigned int pingpong_fbo[2];
+    unsigned int pingpong_colorbuffers[2];
+    glGenFramebuffers(2, pingpong_fbo);
+    glGenTextures(2, pingpong_colorbuffers);
+    for(unsigned int i = 0; i < 2; i++)
+    {
+        glBindFramebuffer(GL_FRAMEBUFFER, pingpong_fbo[i]);
+        glBindTexture(GL_TEXTURE_2D, pingpong_colorbuffers[i]);
+        // 给纹理分配空间
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, width, height, 0, GL_RGBA, GL_FLOAT, NULL);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE); // we clamp to the edge as the blur filter would otherwise sample repeated texture values!
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        // 将纹理绑定到对应的framebuffer中
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, pingpong_colorbuffers[i], 0);
+        if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+        {
+            cout << "Framebuffer not complete!" << endl;
+        }
+    }
 
     // test
     // 发光球体渲染
