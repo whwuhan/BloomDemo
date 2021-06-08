@@ -10,7 +10,7 @@ in VsOut
     vec2 tex_coords;                    // 顶点的纹理坐标
 } fs_in;
 
-uniform vec3 view_pos;                  // 视线的位置
+// uniform vec3 view_pos;                  // 视线的位置
 uniform vec4 light_color;               // 发光球体的颜色
 
 void main()

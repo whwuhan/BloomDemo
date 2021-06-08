@@ -197,7 +197,7 @@ void Window::init_and_run()
         process_input(Window::glfw_window);
         
         // 背景颜色
-        glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+        glClearColor(0.1f, 0.1f, 0.1f, 0.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         
         // 获取投影矩阵和相机矩阵
@@ -212,14 +212,27 @@ void Window::init_and_run()
         shader_shpere.setMat4("view", view);
         shader_shpere.setMat4("model", sphere.model);
         shader_shpere.setVec4("color", sphere.color);
-        // ==========================场景渲染==========================
 
+
+        // 渲染原始图像并找出高光部分
+        glBindFramebuffer(GL_FRAMEBUFFER, hdr_fbo);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        // 激活着色器程序
+        shader_bloom.use();
+
+        // MVP变换
+        shader_bloom.setMat4("projection", projection);
+        shader_bloom.setMat4("view", view);
+        shader_bloom.setMat4("model", sphere.model);
+        shader_bloom.setVec4("light_color", sphere.color);
+        // ==========================场景渲染==========================
         // 渲染所有的球体光源
         for(auto it = Scene::spheres.begin(); it != Scene::spheres.end(); it++)
         {
             Render::render_sphere(it->second);
         }
-
+        
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
         // ==========================场景渲染结束=======================
 
         BloomDemoUI::render_demo_ui();
