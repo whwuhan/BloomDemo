@@ -86,10 +86,28 @@ void Window::init_and_run()
     BloomDemoUI::init(Window::glfw_window);
 
     // shader
-    Shader sphere_shader
-    (
+    // 渲染测试球体的shader
+    Shader shader_shpere(
         "shaders/sphere.vs.glsl",
         "shaders/sphere.fs.glsl"
+    );
+
+    // 渲染原始图像和高光的shader
+    Shader shader_bloom(
+        "shaders/bloom.vs.glsl",
+        "shaders/bloom.fs.glsl"
+    );
+
+    // 进行模糊的shader
+    Shader shader_blur(
+        "shaders/blur.vs.glsl",
+        "shaders/blur.fs.glsl"
+    );
+
+    // 最后进行叠加的shader
+    Shader shader_final(
+        "shaders/final.vs.glsl",
+        "shaders/final.fs.glsl"
     );
     // end shader
 
@@ -156,6 +174,8 @@ void Window::init_and_run()
             cout << "Framebuffer not complete!" << endl;
         }
     }
+    // 绑定回原有的framebuffer
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
     // test
     // 发光球体渲染
@@ -185,13 +205,13 @@ void Window::init_and_run()
         mat4 view = camera.GetViewMatrix();
 
         // 激活着色器程序
-        sphere_shader.use();
+        shader_shpere.use();
 
         // MVP变换
-        sphere_shader.setMat4("projection", projection);
-        sphere_shader.setMat4("view", view);
-        sphere_shader.setMat4("model", sphere.model);
-        sphere_shader.setVec4("color", sphere.color);
+        shader_shpere.setMat4("projection", projection);
+        shader_shpere.setMat4("view", view);
+        shader_shpere.setMat4("model", sphere.model);
+        shader_shpere.setVec4("color", sphere.color);
         // ==========================场景渲染==========================
 
         // 渲染所有的球体光源

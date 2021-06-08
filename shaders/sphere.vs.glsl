@@ -18,8 +18,8 @@ uniform mat4 projection;
 
 void main()
 {
-    vs_out.frag_pos = a_pos;
-    vs_out.normal = a_normal;
+    vs_out.frag_pos = vec3(model * vec4(a_pos, 1.0f));
+    vs_out.normal = a_normal;                               // 因为是球体，不用考虑横纵轴不规则缩放
     vs_out.tex_coords = a_tex_coords;
     gl_Position = projection * view * model * vec4(a_pos, 1.0f);
 }
