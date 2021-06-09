@@ -109,6 +109,8 @@ void Window::init_and_run()
         "shaders/final.vs.glsl",
         "shaders/final.fs.glsl"
     );
+    // shader 配置
+    shader_blur.setInt("image", 0);
     // end shader
 
     // 配置framebuffer
@@ -205,13 +207,13 @@ void Window::init_and_run()
         mat4 view = camera.GetViewMatrix();
 
         // 激活着色器程序
-        shader_shpere.use();
+        // shader_shpere.use();
 
-        // MVP变换
-        shader_shpere.setMat4("projection", projection);
-        shader_shpere.setMat4("view", view);
-        shader_shpere.setMat4("model", sphere.model);
-        shader_shpere.setVec4("color", sphere.color);
+        // // MVP变换
+        // shader_shpere.setMat4("projection", projection);
+        // shader_shpere.setMat4("view", view);
+        // shader_shpere.setMat4("model", sphere.model);
+        // shader_shpere.setVec4("color", sphere.color);
 
 
         // 渲染原始图像并找出高光部分
@@ -231,9 +233,33 @@ void Window::init_and_run()
         {
             Render::render_sphere(it->second);
         }
-        
+        // 绑定回默认framebuffer
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
         // ==========================场景渲染结束=======================
+
+        // 模糊图像
+        shader_blur.use();
+        bool horizontal = true;             // 是否横向滤波
+        bool first_iteration = true;        // 是否是第一次滤波
+        unsigned int amount = 10;
+        for(unsigned int i = 0; i < amount; i++)
+        {
+            glBindFramebuffer(GL_FRAMEBUFFER, pingpong_fbo[horizontal]);
+            shader_blur.setInt("horizontal", horizontal);
+            glBindTexture(
+                GL_TEXTURE_2D,
+                first_iteration ? color_buffers[1] : pingpong_colorbuffers[!horizontal]
+            );
+            // 渲染到一张texture上
+            
+            renderQuad();
+            horizontal = !horizontal;
+            if (first_iteration)
+            {
+                first_iteration = false;
+            }
+        }
+
 
         BloomDemoUI::render_demo_ui();
 

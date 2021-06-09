@@ -5,6 +5,7 @@ in vec2 tex_coords;
 
 uniform sampler2D image;        // 要进行模糊的图像
 uniform bool horizontal;        // 是否是横向滤波
+
 // 滤波的权重
 uniform float weight[5] = float[] (0.2270270270, 0.1945945946, 0.1216216216, 0.0540540541, 0.0162162162);
 
