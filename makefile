@@ -5,6 +5,7 @@ include makefile_conf.mk
 OBJS := \
 objs/bloom_demo_main.o \
 objs/scene.o \
+objs/quad.o \
 objs/sphere.o \
 objs/bloom_demo_ui.o \
 objs/camera.o \
@@ -29,6 +30,10 @@ objs/bloom_demo_main.o : bloom_demo_main.cpp
 # scene 场景
 objs/scene.o : src/components/scene.cpp
 	$(CC) $(FLAGS) -I$(INCLUDE_DIR) -I$(DEPS_INCLUDE_DIR) -I$(DEPS_INCLUDE_DIR)/imgui -c src/components/scene.cpp -o $@
+
+# quad
+objs/quad.o : src/geometry/quad.cpp
+	$(CC) $(FLAGS) -I$(INCLUDE_DIR) -I$(DEPS_INCLUDE_DIR) -I$(DEPS_INCLUDE_DIR)/imgui -c src/geometry/quad.cpp -o $@
 
 # sphere
 objs/sphere.o : src/geometry/sphere.cpp
