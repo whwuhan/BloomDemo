@@ -217,26 +217,26 @@ void Window::init_and_run()
         mat4 projection = perspective(radians(camera.Zoom), (float)Window::width / (float)Window::height, 0.1f, 100.0f);
         mat4 view = camera.GetViewMatrix();
         // 激活着色器程序
-        // shader_shpere.use();
+        shader_shpere.use();
 
-        // // MVP变换
-        // shader_shpere.setMat4("projection", projection);
-        // shader_shpere.setMat4("view", view);
-        // shader_shpere.setMat4("model", sphere.model);
-        // shader_shpere.setVec4("color", sphere.color);
+        // MVP变换
+        shader_shpere.setMat4("projection", projection);
+        shader_shpere.setMat4("view", view);
+        shader_shpere.setMat4("model", sphere.model);
+        shader_shpere.setVec4("color", sphere.color);
 
 
         // 渲染原始图像并找出高光部分
-        glBindFramebuffer(GL_FRAMEBUFFER, hdr_fbo);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        // 激活着色器程序
-        shader_bloom.use();
+        // glBindFramebuffer(GL_FRAMEBUFFER, hdr_fbo);
+        // glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        // // 激活着色器程序
+        // shader_bloom.use();
         
-        // MVP变换
-        shader_bloom.setMat4("projection", projection);
-        shader_bloom.setMat4("view", view);
-        shader_bloom.setMat4("model", sphere.model);
-        shader_bloom.setVec4("light_color", sphere.color);
+        // // MVP变换
+        // shader_bloom.setMat4("projection", projection);
+        // shader_bloom.setMat4("view", view);
+        // shader_bloom.setMat4("model", sphere.model);
+        // shader_bloom.setVec4("light_color", sphere.color);
         // ==========================场景渲染==========================
         // 渲染所有的球体光源
         for(auto it = Scene::spheres.begin(); it != Scene::spheres.end(); it++)
@@ -248,11 +248,11 @@ void Window::init_and_run()
         // cout << width << endl;
         // cout << height << endl;
         // 测试
-        shader_test.use();
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, color_buffers[0]);
+        // shader_test.use();
+        // glActiveTexture(GL_TEXTURE0);
+        // glBindTexture(GL_TEXTURE_2D, color_buffers[0]);
         
-        Render::render_quad(quad);
+        // Render::render_quad(quad);
         // ==========================场景渲染结束=======================
 
         // 模糊图像

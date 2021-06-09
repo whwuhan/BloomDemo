@@ -20,11 +20,11 @@ void main()
     float brightness = dot(vec3(light_color), vec3(0.2126, 0.7152, 0.0722));    // 光照强度
     if(brightness > 1)
     {
-        bright_color = result;                                  // 高亮部分就是原有的颜色
+        bright_color = result;                                      // 高亮部分就是原有的颜色
     }
     else
     {
-        bright_color = vec4(0.0, 0.0, 0.0, 1.0);            // 非高亮部分就是纯黑色
+        bright_color = vec4(0.0, 0.0, 0.0, 1.0);                // 非高亮部分就是纯黑色
     }
     frag_color = result;
 }
