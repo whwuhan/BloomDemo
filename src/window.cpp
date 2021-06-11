@@ -13,7 +13,7 @@ Camera Window::camera(vec3(0.0f,0.0f,1.0f));            // 相机
 float Window::camera_speed_scale = 1.0f;                // 相机移速比例
 //渲染相关
 bool Window::use_MSAA = true;
-int Window::MSAA_level = 8;                             // MSAA采样数量
+int Window::MSAA_level = 1;                             // MSAA采样数量
 //镜头操作模式
 OPERATE_MODE Window::operate_mode = WOW;                // 默认为WOW的操作模式
 //timing
@@ -41,33 +41,46 @@ void Window::init_and_run()
 #ifdef __APPLE__
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE); //mac用户需要设置，初始化才能有效
 #endif
-    //创建一个窗口对象
+    // 创建一个窗口对象
     string window_title = "Bloom Demo";
-    //参数依次是长，宽，名称，后两个参数忽略
+    // 参数依次是长，宽，名称，后两个参数忽略
     Window::glfw_window = glfwCreateWindow(Window::width, Window::height, window_title.c_str(), NULL, NULL);
-    
+    // 获取glfw window宽高
+    // int win_width, win_height;
+    // glfwGetFramebufferSize(Window::glfw_window, &win_width, &win_height);
+    // cout << "Window::width: " << Window::width << endl;
+    // cout << "Window::height: " << Window::height << endl;
+    // cout << "win_width: " << win_width << endl;
+    // cout << "win_height: " << win_height << endl;
+
+    // 重新获取屏幕宽高，因为Retina屏幕指定宽高和实际宽高不一致
+    int win_width, win_height;
+    glfwGetFramebufferSize(Window::glfw_window, &win_width, &win_height);
+    Window::width = win_width;
+    Window::height = win_height;
+
     if (Window::glfw_window == nullptr)
     {
         cout << "Failed to create GLFW window" << endl;
         glfwTerminate();
         return;
     }
-    //将窗口的上下文设置成主线程的上下文
+    // 将窗口的上下文设置成主线程的上下文
     glfwMakeContextCurrent(Window::glfw_window);
     glfwSwapInterval(1); // Enable vsync 每帧的交换间隔，防止屏幕撕裂
-    //注册回调函数，告诉GLFW窗口大小调整时，调用这个回调函数
+    // 注册回调函数，告诉GLFW窗口大小调整时，调用这个回调函数
     glfwSetFramebufferSizeCallback(Window::glfw_window, framebuffer_size_callback);
-    //鼠标滚轮监听
+    // 鼠标滚轮监听
     glfwSetScrollCallback(Window::glfw_window, scroll_callback);
-    //鼠标点击回调函数
+    // 鼠标点击回调函数
     glfwSetMouseButtonCallback(Window::glfw_window, mouse_button_callback);
-    //鼠标移动回调函数 默认模式是WOW风格
+    // 鼠标移动回调函数 默认模式是WOW风格
     glfwSetCursorPosCallback(Window::glfw_window, nullptr);
-    //告诉GLFW选中窗口不显示鼠标
-    //glfwSetInputMode(Window::glfw_window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+    // 告诉GLFW选中窗口不显示鼠标
+    // glfwSetInputMode(Window::glfw_window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
-    //GLAD是用来管理OpenGL的函数指针
-    //初始化GLAD
+    // GLAD是用来管理OpenGL的函数指针
+    // 初始化GLAD
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
     {
         //glfwGetProcAddress 根据编译的系统给出了正确的函数
@@ -116,8 +129,11 @@ void Window::init_and_run()
         "shaders/test.fs.glsl"
     );
     // shader 配置
+    // 要激活
+    shader_blur.use();
     shader_blur.setInt("image", 0);
-    shader_test.setInt("text", 0);
+    shader_test.use();
+    shader_test.setInt("tex", 0);
     // end shader
 
     // 配置framebuffer
@@ -133,7 +149,8 @@ void Window::init_and_run()
     for(unsigned int i = 0; i < 2; i++)
     {
         glBindTexture(GL_TEXTURE_2D, color_buffers[i]);
-        // 给texture分配内存空间
+        // 给texture分配内存空间 
+        // 注意这里乘2是因为Retina屏幕
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, Window::width, Window::height, 0, GL_RGBA, GL_FLOAT, NULL);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -163,27 +180,27 @@ void Window::init_and_run()
     // trick创建两个framebuffer 因为要滤波多次，例如横向滤波5次，纵向滤波5次
     // 所以用两个framebuffer，先提取高亮部分放到第一个buffer中，然后横向滤波一次放入第二个buffer
     // 再用第二个buffer中的结果纵向滤波一次，结果放入第一个buffer，由此交替滤波
-    // unsigned int pingpong_fbo[2];
-    // unsigned int pingpong_color_buffers[2];
-    // glGenFramebuffers(2, pingpong_fbo);
-    // glGenTextures(2, pingpong_color_buffers);
-    // for(unsigned int i = 0; i < 2; i++)
-    // {
-    //     glBindFramebuffer(GL_FRAMEBUFFER, pingpong_fbo[i]);
-    //     glBindTexture(GL_TEXTURE_2D, pingpong_color_buffers[i]);
-    //     // 给纹理分配空间
-    //     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, Window::width, Window::height, 0, GL_RGBA, GL_FLOAT, NULL);
-    //     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    //     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    //     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE); // we clamp to the edge as the blur filter would otherwise sample repeated texture values!
-    //     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    //     // 将纹理绑定到对应的framebuffer中
-    //     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, pingpong_color_buffers[i], 0);
-    //     if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
-    //     {
-    //         cout << "Framebuffer not complete!" << endl;
-    //     }
-    // }
+    unsigned int pingpong_fbo[2];
+    unsigned int pingpong_color_buffers[2];
+    glGenFramebuffers(2, pingpong_fbo);
+    glGenTextures(2, pingpong_color_buffers);
+    for(unsigned int i = 0; i < 2; i++)
+    {
+        glBindFramebuffer(GL_FRAMEBUFFER, pingpong_fbo[i]);
+        glBindTexture(GL_TEXTURE_2D, pingpong_color_buffers[i]);
+        // 给纹理分配空间
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, Window::width, Window::height, 0, GL_RGBA, GL_FLOAT, NULL);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE); // we clamp to the edge as the blur filter would otherwise sample repeated texture values!
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        // 将纹理绑定到对应的framebuffer中
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, pingpong_color_buffers[i], 0);
+        if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+        {
+            cout << "Framebuffer not complete!" << endl;
+        }
+    }
     // 绑定回原有的framebuffer
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
@@ -195,7 +212,6 @@ void Window::init_and_run()
     Quad quad;                           // 生成一个矩形贴图
     // end test
 
-    
     // 渲染循环
     while (!glfwWindowShouldClose(Window::glfw_window))
     {
@@ -215,28 +231,30 @@ void Window::init_and_run()
         // cout << Window::height << endl;
         // 获取投影矩阵和相机矩阵
         mat4 projection = perspective(radians(camera.Zoom), (float)Window::width / (float)Window::height, 0.1f, 100.0f);
+        // mat4 projection = glm::ortho(-3.0f, 3.0f, -2.0f, 2.0f, 0.01f, 100.0f);
         mat4 view = camera.GetViewMatrix();
-        // 激活着色器程序
-        shader_shpere.use();
 
-        // MVP变换
-        shader_shpere.setMat4("projection", projection);
-        shader_shpere.setMat4("view", view);
-        shader_shpere.setMat4("model", sphere.model);
-        shader_shpere.setVec4("color", sphere.color);
+        // // 激活着色器程序
+        // shader_shpere.use();
+        // // MVP变换
+        // shader_shpere.setMat4("projection", projection);
+        // shader_shpere.setMat4("view", view);
+        // shader_shpere.setMat4("model", sphere.model);
+        // shader_shpere.setVec4("color", sphere.color);
 
 
         // 渲染原始图像并找出高光部分
-        // glBindFramebuffer(GL_FRAMEBUFFER, hdr_fbo);
-        // glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        // // 激活着色器程序
-        // shader_bloom.use();
+        glBindFramebuffer(GL_FRAMEBUFFER, hdr_fbo);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        // 激活着色器程序
+        shader_bloom.use();
         
-        // // MVP变换
-        // shader_bloom.setMat4("projection", projection);
-        // shader_bloom.setMat4("view", view);
-        // shader_bloom.setMat4("model", sphere.model);
-        // shader_bloom.setVec4("light_color", sphere.color);
+        // MVP变换
+        shader_bloom.setMat4("projection", projection);
+        shader_bloom.setMat4("view", view);
+        shader_bloom.setMat4("model", sphere.model);
+        shader_bloom.setVec4("light_color", sphere.color);
+
         // ==========================场景渲染==========================
         // 渲染所有的球体光源
         for(auto it = Scene::spheres.begin(); it != Scene::spheres.end(); it++)
@@ -245,38 +263,43 @@ void Window::init_and_run()
         }
         // 绑定回默认framebuffer
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
-        // cout << width << endl;
-        // cout << height << endl;
+
         // 测试
         // shader_test.use();
         // glActiveTexture(GL_TEXTURE0);
-        // glBindTexture(GL_TEXTURE_2D, color_buffers[0]);
-        
+        // glBindTexture(GL_TEXTURE_2D, color_buffers[1]);
         // Render::render_quad(quad);
         // ==========================场景渲染结束=======================
 
         // 模糊图像
-        // shader_blur.use();
-        // bool horizontal = true;             // 是否横向滤波
-        // bool first_iteration = true;        // 是否是第一次滤波
-        // unsigned int amount = 10;
-        // for(unsigned int i = 0; i < amount; i++)
-        // {
-        //     glBindFramebuffer(GL_FRAMEBUFFER, pingpong_fbo[horizontal]);
-        //     shader_blur.setInt("horizontal", horizontal);
-        //     glBindTexture(
-        //         GL_TEXTURE_2D,
-        //         first_iteration ? color_buffers[1] : pingpong_color_buffers[!horizontal]
-        //     );
-        //     // 渲染到一张texture上
-        //     Render::render_quad(quad);
-        //     horizontal = !horizontal;
-        //     if (first_iteration)
-        //     {
-        //         first_iteration = false;
-        //     }
-        // }
-        // glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        shader_blur.use();
+        bool horizontal = true;             // 是否横向滤波
+        bool first_iteration = true;        // 是否是第一次滤波
+        unsigned int amount = 10;           // 横向滤波和纵向滤波的总次数
+        for(unsigned int i = 0; i < amount; i++)
+        {
+            glBindFramebuffer(GL_FRAMEBUFFER, pingpong_fbo[horizontal]);
+            shader_blur.setInt("horizontal", horizontal);
+            glBindTexture(
+                GL_TEXTURE_2D,
+                first_iteration ? color_buffers[1] : pingpong_color_buffers[!horizontal]
+            );
+            // 渲染到一张texture上
+            Render::render_quad(quad);
+            horizontal = !horizontal;
+            if (first_iteration)
+            {
+                first_iteration = false;
+            }
+        }
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+        // 测试模糊效果
+        shader_test.use();
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, pingpong_color_buffers[1]);
+        Render::render_quad(quad);
+
 
         // glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         // shader_final.use();
@@ -302,8 +325,8 @@ void framebuffer_size_callback(GLFWwindow *glfw_window, int width, int height)
 {
     Window::width = width;
     Window::height = height;
-    cout << width << endl;
-    cout << height << endl;
+    // cout << width << endl;
+    // cout << height << endl;
     glViewport(0, 0, width, height);
 }
 
