@@ -11,13 +11,13 @@ in VsOut
 } fs_in;
 
 // uniform vec3 view_pos;                  // 视线的位置
-uniform vec4 light_color;               // 发光球体的颜色
+uniform vec4 color;                         // 发光球体的颜色
 
 void main()
 {
     // float dis = length(fs_in - view_pos);
-    vec4 result = light_color;
-    float brightness = dot(vec3(light_color), vec3(0.8126, 0.7152, 0.722));    // 光照强度
+    vec4 result = color;
+    float brightness = dot(vec3(color), vec3(0.8126, 0.7152, 0.722));    // 光照强度
     if(brightness > 1)
     {
         bright_color = result;                                      // 高亮部分就是原有的颜色

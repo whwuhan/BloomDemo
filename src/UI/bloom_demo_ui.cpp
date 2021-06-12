@@ -157,12 +157,53 @@ void BloomDemoUI::render_right_sidebar()
         {
             for(auto it = Scene::spheres.begin(); it != Scene::spheres.end(); it++)
             {
+                // 每个发光球的UI
                 ImGui::SetNextItemOpen(true, ImGuiCond_Once);
                 if (ImGui::TreeNode(it->first.c_str()))
                 {
+                    // 光球的颜色
+                    float photonsphere_color [3] = {
+                        it->second.color.x,
+                        it->second.color.y,
+                        it->second.color.z,
+                    };
+                    ImGui::ColorEdit3("Color", photonsphere_color);
+                    it->second.color.x = photonsphere_color[0];
+                    it->second.color.y = photonsphere_color[1];
+                    it->second.color.z = photonsphere_color[2];
+                    it->second.color.w = 1.0;
+                    // cout << it->second.color.x << endl;
+                    // cout << color[0] << endl;
+                    
+                    // 位置和缩放
+                    // 平移 
+                    ImGui::SetNextItemWidth(80);
+                    ImGui::DragFloat("trans_x", &it->second.trans_x, 0.01f);ImGui::SameLine();                        
+                    ImGui::SetNextItemWidth(80);
+                    ImGui::DragFloat("trans_y", &it->second.trans_y, 0.01f);ImGui::SameLine();
+                    ImGui::SetNextItemWidth(80);
+                    ImGui::DragFloat("trans_z", &it->second.trans_z, 0.01f);
+                    it->second.model = glm::translate(
+                        glm::mat4(1.0f),
+                        glm::vec3(it->second.trans_x, it->second.trans_y, it->second.trans_z)
+                    );
+                    
+                    // 缩放
+                    ImGui::SliderFloat("Scale", &it->second.scale, 0.0f, 10.0f, "Scale = %.3f");
+                    it->second.model = glm::scale(it->second.model, glm::vec3(it->second.scale));
 
+                    //delete button 
+                    ImVec2 button_size(ImGui::GetFontSize() * 6.0f, 0.0f);
+                    if(ImGui::Button("Delete", button_size))
+                    {
+                        Scene::delete_sphere(it->first);
+                        //注意这里删除后要break否则会出现内存错误
+                        //猜测是因为map删除元素后，迭代器失效！！！！
+                        ImGui::TreePop();
+                        break;
+                    }
                     ImGui::TreePop();
-                }// end Light TreeNode
+                } // end Light TreeNode
             }
             ImGui::TreePop();
         } // end Lights TreeNode
