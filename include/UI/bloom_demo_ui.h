@@ -1,7 +1,13 @@
 #pragma once
+#include <glad/glad.h>
+#include <GLFW/glfw3.h>
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
 #include <imgui/imgui.h>
 #include <imgui/backends/imgui_impl_glfw.h>
 #include <imgui/backends/imgui_impl_opengl3.h>
+
+#include <window.h>
 
 class BloomDemoUI
 {
@@ -10,6 +16,7 @@ public:
     static void init(GLFWwindow* glfw_window);      // 初始化，在渲染循环外
     static void render_demo_ui();                   // 渲染imgui demo
     static void render();                           // 渲染所有的UI
+    static void render_message_box();               // 渲染信息框
     static void destroy();                          // 清空数据
 
 private:
@@ -22,4 +29,7 @@ private:
     static bool show_right_sidebar;                 // 显示右边Sidebar
     static bool show_message_box;                   // 信息窗口
     static int style;                               // UI风格
+
+    static float message_box_pos_x;                 // messagebox的x轴
+    static float message_box_pos_y;                 // messagebox的y轴
 };

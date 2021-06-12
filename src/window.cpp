@@ -43,8 +43,9 @@ void Window::init_and_run()
 #endif
     // 创建一个窗口对象
     string window_title = "Bloom Demo";
-    // 参数依次是长，宽，名称，后两个参数忽略
+    // 参数依次是宽，高，名称，后两个参数忽略
     Window::glfw_window = glfwCreateWindow(Window::width, Window::height, window_title.c_str(), NULL, NULL);
+
     // 获取glfw window宽高
     // int win_width, win_height;
     // glfwGetFramebufferSize(Window::glfw_window, &win_width, &win_height);
@@ -58,6 +59,8 @@ void Window::init_and_run()
     glfwGetFramebufferSize(Window::glfw_window, &win_width, &win_height);
     Window::width = win_width;
     Window::height = win_height;
+    // cout << win_width << endl;
+    // cout << win_height << endl;
 
     if (Window::glfw_window == nullptr)
     {
@@ -161,16 +164,17 @@ void Window::init_and_run()
         // 将texture和绑定到framebuffer上
         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i, GL_TEXTURE_2D, color_buffers[i], 0);
     }
-
+    // 告诉opengl当前framebuffer需要使用哪两个color attachment
+    unsigned int attachments[2] = {GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1};
+    glDrawBuffers(2, attachments);
+    
     // 配置renderbuffer
     unsigned int rbo_depth;
     glGenBuffers(1, &rbo_depth);
     glBindRenderbuffer(GL_RENDERBUFFER, rbo_depth);
     glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, Window::width, Window::height);
     glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, rbo_depth);
-    // 告诉opengl需要使用哪两个color attachment
-    unsigned int attachments[2] = {GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1};
-    glDrawBuffers(2, attachments);
+
     if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
     {
         cout << "Framebuffer not complete!" << endl;
@@ -274,7 +278,7 @@ void Window::init_and_run()
         shader_blur.use();
         bool horizontal = true;             // 是否横向滤波
         bool first_iteration = true;        // 是否是第一次滤波
-        unsigned int amount = 50;           // 横向滤波和纵向滤波的总次数
+        unsigned int amount =30;           // 横向滤波和纵向滤波的总次数
         for (unsigned int i = 0; i < amount; i++)
         {
             glBindFramebuffer(GL_FRAMEBUFFER, pingpong_fbo[horizontal]);
@@ -308,8 +312,8 @@ void Window::init_and_run()
         Render::render_quad(quad);
 
         // 渲染UI
-        BloomDemoUI::render_demo_ui();
-
+        // BloomDemoUI::render_demo_ui();
+        BloomDemoUI::render();
         // 交换buffer
         glfwSwapBuffers(Window::glfw_window);
         glfwPollEvents();
