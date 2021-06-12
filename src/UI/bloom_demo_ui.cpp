@@ -1,5 +1,5 @@
 #include <UI/bloom_demo_ui.h>
-
+using namespace std;
 // 初始化
 GLFWwindow* BloomDemoUI::glfw_window        = nullptr;      // glfw window
 float BloomDemoUI::font_size                = 18.0;         // 字体大小
@@ -11,8 +11,11 @@ bool BloomDemoUI::show_right_sidebar        = true;         // 显示右边Sideb
 bool BloomDemoUI::show_message_box          = true;         // 信息窗口
 int BloomDemoUI::style                      = 0;            // UI风格
 float BloomDemoUI::message_box_pos_x        = 3;            //message box距离左边距离
-float BloomDemoUI::message_box_pos_y        = 3;          //message box距离usage的纵向距离
-
+float BloomDemoUI::message_box_pos_y        = 3;            //message box距离usage的纵向距离
+float BloomDemoUI::right_sidebar_pos_x      = 3;            // 右侧边栏位置的X坐标(距离右侧的距离) 
+float BloomDemoUI::right_sidebar_pos_y      = 22;           // 右侧边栏位置的Y坐标
+float BloomDemoUI::right_sidebar_width      = 500;          // 右侧边栏宽
+float BloomDemoUI::right_sidebar_height     = 650;          // 右侧边栏高
 
 void BloomDemoUI::init(GLFWwindow* glfw_window)             // 初始化，在渲染循环外
 {
@@ -71,7 +74,8 @@ void BloomDemoUI::render()
     IM_ASSERT(ImGui::GetCurrentContext() != NULL && "Missing dear imgui context. Refer to examples app!");
     
     // 渲染所有的UI
-    render_message_box();
+    render_message_box();               // 信息框
+    render_right_sidebar();             // 右侧sidebar
 
     // imgui渲染
     ImGui::Render();
@@ -106,14 +110,66 @@ void BloomDemoUI::render_message_box()
     ImGui::Begin("Message Box", &BloomDemoUI::show_message_box, ImGuiWindowFlags_AlwaysAutoResize);
     {   
         //显示帧数
-        ImGui::Text
-        (
+        ImGui::Text(
             "Application average %.3f ms/frame (%.1f FPS)", 
             1000.0f / ImGui::GetIO().Framerate, 
             ImGui::GetIO().Framerate
         );
     }
     ImGui::End();
+}
+
+// 渲染有侧边栏
+void BloomDemoUI::render_right_sidebar()
+{
+    //获取glfw window宽高
+    int win_width, win_height;
+    glfwGetFramebufferSize(Window::glfw_window, &win_width, &win_height);
+    const ImGuiViewport* main_viewport = ImGui::GetMainViewport();
+    //设置位置
+    ImGui::SetNextWindowPos(
+        ImVec2(
+            main_viewport->WorkPos.x + win_width / 2.0 - BloomDemoUI::right_sidebar_width - BloomDemoUI::right_sidebar_pos_x, 
+            main_viewport->WorkPos.y + BloomDemoUI::right_sidebar_pos_y
+        ), 
+        ImGuiCond_FirstUseEver
+    );
+    //设置Sidebar大小
+    ImGui::SetNextWindowSize(
+        ImVec2(BloomDemoUI::right_sidebar_width, BloomDemoUI::right_sidebar_height), 
+        ImGuiCond_FirstUseEver
+    );
+
+    ImGui::Begin("BloomDemo", &BloomDemoUI::show_right_sidebar, ImGuiWindowFlags_None);
+    {
+        // 添加photospheres
+        ImVec2 button_size(ImGui::GetFontSize() * 6.0f, 0.0f);
+        if(ImGui::Button("Add photospheres", button_size))
+        {
+            Sphere sphere;
+            sphere.create_sphere();
+            Scene::add_sphere("Photosphere", sphere);
+        }
+
+        // 渲染每个球的信息UI
+        ImGui::SetNextItemOpen(true, ImGuiCond_Once); // 设置下一个窗口打开（只设置一次）
+        if (ImGui::TreeNode("Photospheres:"))
+        {
+            for(auto it = Scene::spheres.begin(); it != Scene::spheres.end(); it++)
+            {
+                ImGui::SetNextItemOpen(true, ImGuiCond_Once);
+                if (ImGui::TreeNode(it->first.c_str()))
+                {
+
+                    ImGui::TreePop();
+                }// end Light TreeNode
+            }
+            ImGui::TreePop();
+        } // end Lights TreeNode
+        
+        
+    }
+    ImGui::End();//sidebar结束
 }
 
 // 清空数据
