@@ -132,6 +132,10 @@ void Window::init_and_run()
     // 要激活
     shader_blur.use();
     shader_blur.setInt("image", 0);
+    shader_final.use();
+    shader_final.setInt("scene", 0);
+    shader_final.setInt("bloom_blur", 1);
+    shader_final.setFloat("exposure", 1.0f);
     shader_test.use();
     shader_test.setInt("tex", 0);
     // end shader
@@ -224,7 +228,7 @@ void Window::init_and_run()
         process_input(Window::glfw_window);
         
         // 背景颜色
-        glClearColor(0.1f, 0.1f, 0.1f, 0.0f);
+        glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         
         // cout << Window::width << endl;
@@ -275,7 +279,7 @@ void Window::init_and_run()
         shader_blur.use();
         bool horizontal = true;             // 是否横向滤波
         bool first_iteration = true;        // 是否是第一次滤波
-        unsigned int amount = 10;           // 横向滤波和纵向滤波的总次数
+        unsigned int amount = 20;           // 横向滤波和纵向滤波的总次数
         for(unsigned int i = 0; i < amount; i++)
         {
             glBindFramebuffer(GL_FRAMEBUFFER, pingpong_fbo[horizontal]);
@@ -297,7 +301,7 @@ void Window::init_and_run()
         // 测试模糊效果
         shader_test.use();
         glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, pingpong_color_buffers[1]);
+        glBindTexture(GL_TEXTURE_2D, color_buffers[1]);
         Render::render_quad(quad);
 
 
@@ -307,7 +311,6 @@ void Window::init_and_run()
         // glBindTexture(GL_TEXTURE_2D, color_buffers[0]);
         // glActiveTexture(GL_TEXTURE1);
         // glBindTexture(GL_TEXTURE_2D, pingpong_color_buffers[!horizontal]);
-        // shader_final.setFloat("exposure", 1.0f);
         // Render::render_quad(quad);
         
         // 渲染UI
@@ -317,6 +320,8 @@ void Window::init_and_run()
         glfwSwapBuffers(Window::glfw_window);
         glfwPollEvents();
     }
+    // 终止glfw
+    glfwTerminate();
 }// end Window::init_and_run()
 
 // 回调函数
