@@ -135,7 +135,7 @@ void Window::init_and_run()
     shader_final.use();
     shader_final.setInt("scene", 0);
     shader_final.setInt("blur", 1);
-    // shader_final.setFloat("exposure", 1.0f);
+    shader_final.setFloat("exposure", 1.0f);
     shader_test.use();
     shader_test.setInt("tex", 0);
     // end shader
@@ -274,7 +274,7 @@ void Window::init_and_run()
         shader_blur.use();
         bool horizontal = true;             // 是否横向滤波
         bool first_iteration = true;        // 是否是第一次滤波
-        unsigned int amount = 10;           // 横向滤波和纵向滤波的总次数
+        unsigned int amount = 50;           // 横向滤波和纵向滤波的总次数
         for (unsigned int i = 0; i < amount; i++)
         {
             glBindFramebuffer(GL_FRAMEBUFFER, pingpong_fbo[horizontal]);

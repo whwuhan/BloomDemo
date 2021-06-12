@@ -9,8 +9,8 @@ radius(0.05),
 index_count(0),
 x_segments(50),
 y_segments(50),
-// color(0.06f, 0.729f, 0.941f, 1.0f),  // 蓝色
-color(1.0f, 0.6f, 0.0f, 1.0f),          // 橘黄色
+color(0.06f, 0.729f, 0.941f, 1.0f),  // 蓝色
+// color(1.0f, 0.6f, 0.0f, 1.0f),          // 橘黄色
 model(1.0f),
 scale(1.0f),
 trans_x(0.0f),
