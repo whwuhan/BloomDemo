@@ -134,8 +134,8 @@ void Window::init_and_run()
     shader_blur.setInt("image", 0);
     shader_final.use();
     shader_final.setInt("scene", 0);
-    shader_final.setInt("bloom_blur", 1);
-    shader_final.setFloat("exposure", 1.0f);
+    shader_final.setInt("blur", 1);
+    // shader_final.setFloat("exposure", 1.0f);
     shader_test.use();
     shader_test.setInt("tex", 0);
     // end shader
@@ -144,9 +144,8 @@ void Window::init_and_run()
     unsigned int hdr_fbo;
     glGenFramebuffers(1, &hdr_fbo);
     glBindFramebuffer(GL_FRAMEBUFFER, hdr_fbo);
-
     // 创建两个color buffer(textures)存储MRT(Multiple Render Targets)的结果
-    // 一个存储原始图像，一个存储高亮部分
+    // color_buffers[0]存储原始图像，color_buffers[1]存储高亮部分
     unsigned int color_buffers[2];
     glGenTextures(2, color_buffers);
     // 配置textures参数并绑定到fbo上
@@ -154,7 +153,6 @@ void Window::init_and_run()
     {
         glBindTexture(GL_TEXTURE_2D, color_buffers[i]);
         // 给texture分配内存空间 
-        // 注意这里乘2是因为Retina屏幕
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, Window::width, Window::height, 0, GL_RGBA, GL_FLOAT, NULL);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -184,7 +182,7 @@ void Window::init_and_run()
     // trick创建两个framebuffer 因为要滤波多次，例如横向滤波5次，纵向滤波5次
     // 所以用两个framebuffer，先提取高亮部分放到第一个buffer中，然后横向滤波一次放入第二个buffer
     // 再用第二个buffer中的结果纵向滤波一次，结果放入第一个buffer，由此交替滤波
-    unsigned int pingpong_fbo[2];
+    unsigned int pingpong_fbo[2];               // 两个framebuffer object对应两个 color_buffer
     unsigned int pingpong_color_buffers[2];
     glGenFramebuffers(2, pingpong_fbo);
     glGenTextures(2, pingpong_color_buffers);
@@ -213,7 +211,7 @@ void Window::init_and_run()
     Sphere sphere;
     sphere.create_sphere();
     Scene::add_sphere("test", sphere);
-    Quad quad;                           // 生成一个矩形贴图
+    Quad quad;                              // 生成一个矩形贴图
     // end test
 
     // 渲染循环
@@ -230,13 +228,6 @@ void Window::init_and_run()
         // 背景颜色
         glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        
-        // cout << Window::width << endl;
-        // cout << Window::height << endl;
-        // 获取投影矩阵和相机矩阵
-        mat4 projection = perspective(radians(camera.Zoom), (float)Window::width / (float)Window::height, 0.1f, 100.0f);
-        // mat4 projection = glm::ortho(-3.0f, 3.0f, -2.0f, 2.0f, 0.01f, 100.0f);
-        mat4 view = camera.GetViewMatrix();
 
         // // 激活着色器程序
         // shader_shpere.use();
@@ -248,11 +239,15 @@ void Window::init_and_run()
 
 
         // 渲染原始图像并找出高光部分
-        glBindFramebuffer(GL_FRAMEBUFFER, hdr_fbo);
+        glBindFramebuffer(GL_FRAMEBUFFER, hdr_fbo);             // 此处使用了MRT 渲染到了color_buffers[2]
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        // 获取投影矩阵和相机矩阵
+        mat4 projection = perspective(radians(camera.Zoom), (float)Window::width / (float)Window::height, 0.1f, 100.0f);
+        // mat4 projection = glm::ortho(-3.0f, 3.0f, -2.0f, 2.0f, 0.01f, 100.0f);
+        mat4 view = camera.GetViewMatrix();
+
         // 激活着色器程序
         shader_bloom.use();
-        
         // MVP变换
         shader_bloom.setMat4("projection", projection);
         shader_bloom.setMat4("view", view);
@@ -275,19 +270,17 @@ void Window::init_and_run()
         // Render::render_quad(quad);
         // ==========================场景渲染结束=======================
 
-        // 模糊图像
+        // 模糊图像 有两个fbo pingpong_fbo[2] 来回滤波
         shader_blur.use();
         bool horizontal = true;             // 是否横向滤波
         bool first_iteration = true;        // 是否是第一次滤波
-        unsigned int amount = 20;           // 横向滤波和纵向滤波的总次数
-        for(unsigned int i = 0; i < amount; i++)
+        unsigned int amount = 10;           // 横向滤波和纵向滤波的总次数
+        for (unsigned int i = 0; i < amount; i++)
         {
             glBindFramebuffer(GL_FRAMEBUFFER, pingpong_fbo[horizontal]);
             shader_blur.setInt("horizontal", horizontal);
-            glBindTexture(
-                GL_TEXTURE_2D,
-                first_iteration ? color_buffers[1] : pingpong_color_buffers[!horizontal]
-            );
+            glActiveTexture(GL_TEXTURE0);
+            glBindTexture(GL_TEXTURE_2D, first_iteration ? color_buffers[1] : pingpong_color_buffers[!horizontal]);  // bind texture of other framebuffer (or scene if first iteration)
             // 渲染到一张texture上
             Render::render_quad(quad);
             horizontal = !horizontal;
@@ -299,22 +292,23 @@ void Window::init_and_run()
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
         // 测试模糊效果
-        shader_test.use();
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, color_buffers[1]);
-        Render::render_quad(quad);
-
-
         // glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        // shader_final.use();
+        // shader_test.use();
         // glActiveTexture(GL_TEXTURE0);
-        // glBindTexture(GL_TEXTURE_2D, color_buffers[0]);
-        // glActiveTexture(GL_TEXTURE1);
         // glBindTexture(GL_TEXTURE_2D, pingpong_color_buffers[!horizontal]);
         // Render::render_quad(quad);
-        
+
+        // 最后将模糊的图像和原始图像叠加
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        shader_final.use();
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, color_buffers[0]);
+        glActiveTexture(GL_TEXTURE1);
+        glBindTexture(GL_TEXTURE_2D, pingpong_color_buffers[!horizontal]);
+        Render::render_quad(quad);
+
         // 渲染UI
-        // BloomDemoUI::render_demo_ui();
+        BloomDemoUI::render_demo_ui();
 
         // 交换buffer
         glfwSwapBuffers(Window::glfw_window);
