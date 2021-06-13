@@ -18,7 +18,7 @@ void Scene::add_sphere(const std::string& sphere_name, const Sphere& sphere)    
 void Scene::delete_sphere(const std::string& sphere_name)                          // 删除发光球体
 {
     spheres.erase(sphere_name);
-    cout << "Sphere : " << sphere_name << "delete successfully." << endl;
+    cout << "Delete Sphere:" << sphere_name << " successfully." << endl;
 }
 
 

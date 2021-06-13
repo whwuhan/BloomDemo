@@ -19,6 +19,8 @@ OPERATE_MODE Window::operate_mode = WOW;                // 默认为WOW的操作
 //timing
 float Window::delta_time = 0.0f;
 float Window::last_frame = 0.0f;
+// 是否改变窗口大小
+bool Window::change_window_size = false;
 //防止模式切换镜头闪烁
 bool Window::first_change_to_FPS_mode = true;           // 第一次切换到FPS操作模式
 bool Window::first_change_to_WOW_mode = true;           // 第一次切换到WOW操作模式
@@ -240,6 +242,24 @@ void Window::init_and_run()
         // 获取时间
         float time = glfwGetTime();
 
+        // 如果改变窗口大小
+        if(change_window_size)
+        {   
+            for(unsigned int i = 0; i < 2; i++)
+            {
+                // 改变两个color_buffer的大小
+                glBindTexture(GL_TEXTURE_2D, color_buffers[i]);
+                glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, Window::width, Window::height, 0, GL_RGBA, GL_FLOAT, NULL);
+                // 改变两个pingpong_color_buffer的大小
+                glBindTexture(GL_TEXTURE_2D, pingpong_color_buffers[i]);
+                glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, Window::width, Window::height, 0, GL_RGBA, GL_FLOAT, NULL);
+            }
+            // 改变rbo的大小
+            glBindRenderbuffer(GL_RENDERBUFFER, rbo_depth);
+            glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, Window::width, Window::height);
+            change_window_size = false;
+        }
+
         // // 激活着色器程序
         // shader_shpere.use();
         // // MVP变换
@@ -345,6 +365,7 @@ void framebuffer_size_callback(GLFWwindow *glfw_window, int width, int height)
 {
     Window::width = width;
     Window::height = height;
+    Window::change_window_size = true;
     // cout << width << endl;
     // cout << height << endl;
     glViewport(0, 0, width, height);

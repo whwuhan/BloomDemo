@@ -143,8 +143,8 @@ void BloomDemoUI::render_right_sidebar()
     ImGui::Begin("BloomDemo", &BloomDemoUI::show_right_sidebar, ImGuiWindowFlags_None);
     {
         // 添加photospheres
-        ImVec2 button_size(ImGui::GetFontSize() * 6.0f, 0.0f);
-        if(ImGui::Button("Add photospheres", button_size))
+        ImVec2 button_size(ImGui::GetFontSize() * 8.0f, 0.0f);
+        if(ImGui::Button("Add photosphere", button_size))
         {
             Sphere sphere;
             sphere.create_sphere();

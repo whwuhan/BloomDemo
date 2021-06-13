@@ -36,6 +36,8 @@ public:
     // timing
     static float delta_time;
     static float last_frame;
+    // 是否改变窗口大小
+    static bool change_window_size;
 
     // 防止镜头闪烁
     static bool first_change_to_FPS_mode;           // 第一次切换到FPS操作模式
