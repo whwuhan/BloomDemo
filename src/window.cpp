@@ -270,7 +270,7 @@ void Window::init_and_run()
                 glm::vec3(it->second.trans_x, it->second.trans_y, it->second.trans_z)
             );
              // 不断变换球体的缩放大小 从[-1,1]映射到[1,1.5]
-            it->second.model = scale(it->second.model, vec3((sin(time) / 4.0 + 1.25)));
+            it->second.model = scale(it->second.model, vec3((sin(time) / 4.0 + 1.25) * it->second.scale));
             // 传入光球的位置和颜色
             shader_bloom.setMat4("model", it->second.model);
             shader_bloom.setVec4("color", it->second.color);
