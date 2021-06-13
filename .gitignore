@@ -1,2 +1,6 @@
+# mac
 .DS_Store
+# imgui布局文件
 imgui.ini
+# 抓帧文件
+*.trace
