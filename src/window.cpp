@@ -6,8 +6,8 @@ using namespace glm;
 //static变量初始化
 GLFWwindow *Window::glfw_window = nullptr;              // glfw window
 //窗口大小
-unsigned int Window::width = 1000;
-unsigned int Window::height = 600;
+unsigned int Window::width = 1200;
+unsigned int Window::height = 800;
 //相机相关
 Camera Window::camera(vec3(0.0f,0.0f,1.0f));            // 相机
 float Window::camera_speed_scale = 1.0f;                // 相机移速比例
