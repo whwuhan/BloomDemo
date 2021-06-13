@@ -157,10 +157,13 @@ void Window::init_and_run()
         glBindTexture(GL_TEXTURE_2D, color_buffers[i]);
         // 给texture分配内存空间 
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, Window::width, Window::height, 0, GL_RGBA, GL_FLOAT, NULL);
+        // glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, 1200, 600, 0, GL_RGBA, GL_FLOAT, NULL);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);  // we clamp to the edge as the blur filter would otherwise sample repeated texture values!
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);  // we clamp to the edge as the blur filter would otherwise sample repeated texture values!
+        // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);
         // 将texture和绑定到framebuffer上
         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i, GL_TEXTURE_2D, color_buffers[i], 0);
     }
@@ -262,8 +265,12 @@ void Window::init_and_run()
         // 渲染所有的球体光源
         for(auto it = Scene::spheres.begin(); it != Scene::spheres.end(); it++)
         {   
-            // 不断变换球体的缩放大小 从[-1,1]映射到[1,1.5]
-            it->second.model = scale(mat4(1.0f), vec3((sin(time) / 4.0 + 1.25)));
+            it->second.model = glm::translate(
+                glm::mat4(1.0f),
+                glm::vec3(it->second.trans_x, it->second.trans_y, it->second.trans_z)
+            );
+             // 不断变换球体的缩放大小 从[-1,1]映射到[1,1.5]
+            it->second.model = scale(it->second.model, vec3((sin(time) / 4.0 + 1.25)));
             // 传入光球的位置和颜色
             shader_bloom.setMat4("model", it->second.model);
             shader_bloom.setVec4("color", it->second.color);
