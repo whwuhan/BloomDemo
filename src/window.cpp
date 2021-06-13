@@ -138,7 +138,7 @@ void Window::init_and_run()
     shader_final.use();
     shader_final.setInt("scene", 0);
     shader_final.setInt("blur", 1);
-    shader_final.setFloat("exposure", 1.0f);
+    // shader_final.setFloat("exposure", 1.0f);
     shader_test.use();
     shader_test.setInt("tex", 0);
     // end shader
@@ -260,12 +260,10 @@ void Window::init_and_run()
         shader_bloom.setMat4("view", view);
         // ==========================场景渲染==========================
         // 渲染所有的球体光源
-        cout << time << endl;
         for(auto it = Scene::spheres.begin(); it != Scene::spheres.end(); it++)
         {   
-            // 不断变换球体的缩放大小
-            // it->second.model = scale(it->second.model, vec3(clamp(abs(sin(time)), 0.75f, 1.0f)));
-            it->second.model = scale(it->second.model, vec3((sin(time) + 2.0) / 2.0));
+            // 不断变换球体的缩放大小 从[-1,1]映射到[1,1.5]
+            it->second.model = scale(it->second.model, vec3((sin(time) / 4.0 + 1.25)));
             // 传入光球的位置和颜色
             shader_bloom.setMat4("model", it->second.model);
             shader_bloom.setVec4("color", it->second.color);
@@ -285,7 +283,7 @@ void Window::init_and_run()
         shader_blur.use();
         bool horizontal = true;             // 是否横向滤波
         bool first_iteration = true;        // 是否是第一次滤波
-        unsigned int amount = 20;           // 横向滤波和纵向滤波的总次数
+        unsigned int amount = 50;           // 横向滤波和纵向滤波的总次数
         for (unsigned int i = 0; i < amount; i++)
         {
             glBindFramebuffer(GL_FRAMEBUFFER, pingpong_fbo[horizontal]);
@@ -314,6 +312,8 @@ void Window::init_and_run()
         
         shader_final.use();
         // shader_final.setFloat("time", time);
+        // 设置曝光度
+        shader_final.setFloat("exposure", sin(time) * 2 + 3);
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, color_buffers[0]);
         glActiveTexture(GL_TEXTURE1);
