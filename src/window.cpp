@@ -321,7 +321,7 @@ void Window::init_and_run()
         shader_final.use();
         // shader_final.setFloat("time", time);
         // 设置曝光度
-        shader_final.setFloat("exposure", sin(time) * 2 + 3);
+        shader_final.setFloat("exposure", sin(time) * 2 + 4);
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, color_buffers[0]);
         glActiveTexture(GL_TEXTURE1);
