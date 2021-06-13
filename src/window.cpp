@@ -263,7 +263,7 @@ void Window::init_and_run()
         for(auto it = Scene::spheres.begin(); it != Scene::spheres.end(); it++)
         {   
             // 不断变换球体的缩放大小 从[-1,1]映射到[1,1.5]
-            it->second.model = scale(it->second.model, vec3((sin(time) / 4.0 + 1.25)));
+            it->second.model = scale(mat4(1.0f), vec3((sin(time) / 4.0 + 1.25)));
             // 传入光球的位置和颜色
             shader_bloom.setMat4("model", it->second.model);
             shader_bloom.setVec4("color", it->second.color);
@@ -283,7 +283,7 @@ void Window::init_and_run()
         shader_blur.use();
         bool horizontal = true;             // 是否横向滤波
         bool first_iteration = true;        // 是否是第一次滤波
-        unsigned int amount = 4;           // 横向滤波和纵向滤波的总次数
+        unsigned int amount = 1;           // 横向滤波和纵向滤波的总次数
         for (unsigned int i = 0; i < amount; i++)
         {
             glBindFramebuffer(GL_FRAMEBUFFER, pingpong_fbo[horizontal]);
