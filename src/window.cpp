@@ -157,7 +157,7 @@ void Window::init_and_run()
         glBindTexture(GL_TEXTURE_2D, color_buffers[i]);
         // 给texture分配内存空间 
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, Window::width, Window::height, 0, GL_RGBA, GL_FLOAT, NULL);
-        // glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, 1200, 600, 0, GL_RGBA, GL_FLOAT, NULL);
+        // glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, 1200, 800, 0, GL_RGBA, GL_FLOAT, NULL);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);  // we clamp to the edge as the blur filter would otherwise sample repeated texture values!
@@ -176,6 +176,7 @@ void Window::init_and_run()
     glGenBuffers(1, &rbo_depth);
     glBindRenderbuffer(GL_RENDERBUFFER, rbo_depth);
     glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, Window::width, Window::height);
+    // glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, 1200, 800);
     glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, rbo_depth);
 
     if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
@@ -290,7 +291,7 @@ void Window::init_and_run()
         shader_blur.use();
         bool horizontal = true;             // 是否横向滤波
         bool first_iteration = true;        // 是否是第一次滤波
-        unsigned int amount = 1;           // 横向滤波和纵向滤波的总次数
+        unsigned int amount = 2;           // 横向滤波和纵向滤波的总次数
         for (unsigned int i = 0; i < amount; i++)
         {
             glBindFramebuffer(GL_FRAMEBUFFER, pingpong_fbo[horizontal]);
