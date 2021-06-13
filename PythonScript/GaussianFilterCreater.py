@@ -5,4 +5,4 @@ def GaussianFilterCreater(sigma, x):
     return 1 / ((2 * PI) ** 0.5 * sigma) * math.exp(-((x ** 2) / (2 * (sigma ** 2))))
 if __name__ == "__main__":
     for i in range(30):
-        print(GaussianFilterCreater(50, i), end = ", ")
+        print(GaussianFilterCreater(10, i), end = ", ")
