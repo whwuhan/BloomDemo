@@ -157,8 +157,8 @@ void Window::init_and_run()
     for(unsigned int i = 0; i < 2; i++)
     {
         glBindTexture(GL_TEXTURE_2D, color_buffers[i]);
-        // 给texture分配内存空间 
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, Window::width, Window::height, 0, GL_RGBA, GL_FLOAT, NULL);
+        // 给texture分配内存空间 渲染一张原始分辨率1/4的texture
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, Window::width / 2.0f, Window::height / 2.0f, 0, GL_RGBA, GL_FLOAT, NULL);
         // glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, 1200, 800, 0, GL_RGBA, GL_FLOAT, NULL);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -177,7 +177,8 @@ void Window::init_and_run()
     unsigned int rbo_depth;
     glGenBuffers(1, &rbo_depth);
     glBindRenderbuffer(GL_RENDERBUFFER, rbo_depth);
-    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, Window::width, Window::height);
+    // 指定rbo的大小为原始窗口的1/4
+    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, Window::width / 2.0f, Window::height / 2.0f);
     // glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, 1200, 800);
     glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, rbo_depth);
 
@@ -200,8 +201,8 @@ void Window::init_and_run()
     {
         glBindFramebuffer(GL_FRAMEBUFFER, pingpong_fbo[i]);
         glBindTexture(GL_TEXTURE_2D, pingpong_color_buffers[i]);
-        // 给纹理分配空间
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, Window::width, Window::height, 0, GL_RGBA, GL_FLOAT, NULL);
+        // 给纹理分配空间为原始分辨率的1/4
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, Window::width / 2.0f, Window::height / 2.0f, 0, GL_RGBA, GL_FLOAT, NULL);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE); // we clamp to the edge as the blur filter would otherwise sample repeated texture values!
@@ -249,14 +250,14 @@ void Window::init_and_run()
             {
                 // 改变两个color_buffer的大小
                 glBindTexture(GL_TEXTURE_2D, color_buffers[i]);
-                glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, Window::width, Window::height, 0, GL_RGBA, GL_FLOAT, NULL);
+                glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, Window::width / 2.0f, Window::height / 2.0f, 0, GL_RGBA, GL_FLOAT, NULL);
                 // 改变两个pingpong_color_buffer的大小
                 glBindTexture(GL_TEXTURE_2D, pingpong_color_buffers[i]);
-                glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, Window::width, Window::height, 0, GL_RGBA, GL_FLOAT, NULL);
+                glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, Window::width / 2.0f, Window::height / 2.0f, 0, GL_RGBA, GL_FLOAT, NULL);
             }
             // 改变rbo的大小
             glBindRenderbuffer(GL_RENDERBUFFER, rbo_depth);
-            glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, Window::width, Window::height);
+            glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, Window::width / 2.0f, Window::height / 2.0f);
             change_window_size = false;
         }
 
@@ -270,7 +271,8 @@ void Window::init_and_run()
 
 
         // 渲染原始图像并找出高光部分
-        glBindFramebuffer(GL_FRAMEBUFFER, hdr_fbo);             // 此处使用了MRT 渲染到了color_buffers[2]
+        glViewport(0, 0, Window::width / 2.0f, Window::height / 2.0f);      // 注意这里的viewport要和texture的大小一致！！！！！！
+        glBindFramebuffer(GL_FRAMEBUFFER, hdr_fbo);                         // 此处使用了MRT 渲染到了color_buffers[2]
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         // 获取投影矩阵和相机矩阵
         mat4 projection = perspective(radians(camera.Zoom), (float)Window::width / (float)Window::height, 0.1f, 100.0f);
@@ -326,6 +328,8 @@ void Window::init_and_run()
                 first_iteration = false;
             }
         }
+        // 渲染窗口大小的图像，将viewport设置会原始图像大小
+        glViewport(0, 0, Window::width, Window::height);
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
         // 测试模糊效果
