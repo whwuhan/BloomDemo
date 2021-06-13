@@ -17,14 +17,14 @@ void main()
 {
     // float dis = length(fs_in - view_pos);
     vec4 result = color;
-    float brightness = dot(vec3(color), vec3(0.8126, 0.7152, 0.722));    // 光照强度
+    float brightness = dot(vec3(color), vec3(0.8126, 0.7152, 0.722));      // 光照强度
     if(brightness > 1)
     {
-        bright_color = result;                                      // 高亮部分就是原有的颜色
+        bright_color = result;                                              // 高亮部分就是原有的颜色
     }
     else
     {
-        bright_color = vec4(0.0, 0.0, 0.0, 1.0);                // 非高亮部分就是纯黑色
+        bright_color = vec4(0.0, 0.0, 0.0, 1.0);                        // 非高亮部分就是纯黑色
     }
     frag_color = result;
 }

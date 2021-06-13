@@ -5,7 +5,7 @@ in vec2 tex_coords;
 uniform sampler2D scene;            // 原始场景
 uniform sampler2D blur;             // 经过模糊后的高光部分
 uniform float exposure;             // 曝光度，用于进行tone mapping
-
+// uniform float time;              // 时间
 void main()
 {
     const float gamma = 2.2;

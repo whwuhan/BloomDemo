@@ -233,6 +233,9 @@ void Window::init_and_run()
         glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+        // 获取时间
+        float time = glfwGetTime();
+
         // // 激活着色器程序
         // shader_shpere.use();
         // // MVP变换
@@ -255,12 +258,14 @@ void Window::init_and_run()
         // MVP变换
         shader_bloom.setMat4("projection", projection);
         shader_bloom.setMat4("view", view);
-        
-
         // ==========================场景渲染==========================
         // 渲染所有的球体光源
+        cout << time << endl;
         for(auto it = Scene::spheres.begin(); it != Scene::spheres.end(); it++)
         {   
+            // 不断变换球体的缩放大小
+            // it->second.model = scale(it->second.model, vec3(clamp(abs(sin(time)), 0.75f, 1.0f)));
+            it->second.model = scale(it->second.model, vec3((sin(time) + 2.0) / 2.0));
             // 传入光球的位置和颜色
             shader_bloom.setMat4("model", it->second.model);
             shader_bloom.setVec4("color", it->second.color);
@@ -306,7 +311,9 @@ void Window::init_and_run()
 
         // 最后将模糊的图像和原始图像叠加
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        
         shader_final.use();
+        // shader_final.setFloat("time", time);
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, color_buffers[0]);
         glActiveTexture(GL_TEXTURE1);
