@@ -43,15 +43,13 @@ public:
     float MouseSensitivity;
     float Zoom;
     //构造方法
-    Camera
-    (
+    Camera(
         glm::vec3 position = glm::vec3(0.0f,0.0f,0.0f),//相机位置
         glm::vec3 up = glm::vec3(0.0f,1.0f,0.0f),
         float yaw = YAW,
         float pitch = PITCH
     );
-    Camera
-    (
+    Camera(
         float posX,
         float posY,
         float posZ,
@@ -74,6 +72,5 @@ public:
 private:
     //计算前向向量
     void updateCameraVectors();
-
 };
 #endif
